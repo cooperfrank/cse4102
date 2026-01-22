@@ -97,6 +97,7 @@ More recently, languages are compiled to the same intermediate representation (w
 - Strong mathematical foundations
 - Very high-level
 - Really elegant for expressing many algorithms
+- All variables are immutable
 
 # OCaml
 - Statically typed, functionally

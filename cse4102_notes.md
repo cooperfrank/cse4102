@@ -106,3 +106,50 @@ More recently, languages are compiled to the same intermediate representation (w
   - Makes implementing many data structures very easy
 - Has type inference
 - Has an industrial-strength compiler with lots of libraries that is actively maintained
+
+# Lecture 3 - 1/29/2026
+
+# Functions
+## Anonymous Functions (Lambdas)
+- Also called Lambdas
+- Defining functions without giving them a name
+- Defined using `fun` keyword and arrow `->`
+- Example:
+  - `let six = (fun (x : int) -> x + 1) 5`
+  - 5 is evaluated into the lambda to return 6
+- There is no difference between functions defined regularly and with lambdas under the hood; they are just syntax
+- Can set a variable equal to a lambda
+
+## Couriering
+- Functions don't actually take two arguments, it is two functions that each take one argument
+- Expands into one-argument lambdas
+- If `my_plus` is a two-argument function, then `let plus_one = my_plus 1;;` returns a function with the first argument set to 1, only takes one more argument
+- Can also be done with regular operators (like +) by changing to postfix syntax, like `let plus_one = (+) 1;;`
+
+## Recursive Functions
+- Defined with `let rec`, `rec` is the recursive keyword
+
+**Factorial Function Example**
+```ocaml
+(* Factorial Function: returns n! *)
+let rec fact (n : int) : int =
+  if n <= 0 then 1
+  else n * (fact (n - 1))
+;;
+```
+
+# Compile Command
+`ocamlc -o <out_file>.exe <in_file>.ml`
+
+# Printing
+- Same syntax as printf in C
+- Example: `Printf.printf "fact(%d) = %d" 0 (fact 0)`
+- Returns type `unit`
+  - Has only value `unit`
+  - This is because functions have to return, so it just returns a single value
+- Can use `let _` to indicate that we don't care about return value
+
+# Assert
+- Takes any expression that returns a boolean
+  - If true, nothing happens
+  - If false, program will error out

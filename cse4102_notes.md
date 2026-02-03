@@ -153,3 +153,225 @@ let rec fact (n : int) : int =
 - Takes any expression that returns a boolean
   - If true, nothing happens
   - If false, program will error out
+ 
+# Lecture 4 - 2/3/2026
+# Tuples
+- Group a fixed number of values
+- Elements may have different types
+- Written with commas inside parentheses
+
+Example:
+```ocaml
+let p = (3, 5)
+```
+
+Type:
+```ocaml
+int * int
+```
+
+- `*` in types means paired with, not multiplication
+
+## Accessing Tuple Elements
+- Built-in functions for pairs
+  - `fst : 'a * 'b -> 'a`
+  - `snd : 'a * 'b -> 'b`
+
+Example:
+```ocaml
+let p = (10, 20)
+fst p
+snd p
+```
+
+- Only works for 2-tuples
+
+# Nested Tuples
+- Tuples can contain other tuples
+- Parentheses show structure
+
+Example:
+```ocaml
+let x = ((1, 2), 3)
+```
+
+Type:
+```ocaml
+(int * int) * int
+```
+
+Example:
+```ocaml
+let y = (1, (2, 3))
+```
+
+Type:
+```ocaml
+int * (int * int)
+```
+
+- `(int * int * int)` is a 3-tuple
+- `((int * int) * int)` and `(int * (int * int))` are different types
+
+# Pattern Matching
+- Primary way to work with tuples
+- Matches values by structure
+
+Example:
+```ocaml
+let (a, b) = (3, 4)
+```
+
+Nested example:
+```ocaml
+let ((x, y), z) = ((1, 2), 3)
+```
+
+# Pattern Matching in Functions
+- Function arguments can be pattern matched
+
+Example:
+```ocaml
+let add_pair (a, b) =
+  a + b
+```
+
+Type:
+```ocaml
+int * int -> int
+```
+
+Nested example:
+```ocaml
+let sum_nested ((a, b), c) =
+  a + b + c
+```
+
+Type:
+```ocaml
+(int * int) * int -> int
+```
+
+# Why Pattern Matching Matters
+- Safer than `fst` and `snd`
+- Clearer and more expressive
+- Scales to complex data structures
+
+# Polymorphism
+A tick followed by a variable means any type
+
+Example:
+`val fst3 : 'a * 'b * 'c -> 'a = <fun>`
+Takes three types and returns a type equivalent to the first one ('a)
+
+We can manually annotate this in the function definition, like
+```
+let fst3 (triple : 'a * 'b * 'c) : 'a =
+  let (x, y, z) = triple in x
+```
+
+You also don't need to use a, b, c, etc. you can put whatever variable name you want
+
+Polymorphic Types Example 2
+```
+let swap (x, y) = (y, x)
+# val swap : 'a * 'b -> 'b * 'a = <fun>
+```
+
+# Lists
+## Cons Operator
+::
+Used to prepend an element to a list
+
+```ocaml
+head :: tl
+
+# Example:
+0 :: [];; # [0]
+[0];; # Equivalent to above, just syntactic sugar
+1 :: 2 :: 3 :: 4 :: 5 :: [];;
+[1; 2; 3; 4; 5];; # Equivalent to above, just syntactic sugar
+```
+
+- Lists can contain any type (including tuples), but all elements within a single list must be the same type
+
+## Append Operator
+- Infix operator
+- @ sign
+- Linear time function, usually use cons
+- Also available as List.append
+`[1; 2] @ [3; 4];; # [1; 2; 3; 4]`
+
+```ocaml
+# Note: match is like switch in other languages
+# First match case is always run
+# Catch-all case _ is generally not advised because we might miss cases we want to handle and ocaml would warn us in this case
+
+let hd (l : int list) : int =
+  match l with
+  | [] -> 0 # if empty list, returns 0
+  | h::_ -> h # pattern matching conditional, return h
+;;
+```
+
+Example:
+```ocaml
+let inc_first (l: int list) : int list =
+  match l with
+  | [] -> []
+  | h::t -> (h + 1)::t
+;;
+
+let l = [1; 2; 3];;
+
+inc_first l;;
+
+l;; # in this case, l is unchanged because inc_first creates a copy of l. Everything is immutable
+# OCaml is optimized to only recreate the head node and append it to the rest of the list instead of making a whole new list
+```
+
+# Recursive Functions on Lists
+Example:
+```ocaml
+let rec inc_all (l: int list) : int list =
+  match l with
+  | [] -> []
+  | h::t -> (h + 1)::(inc_all t)
+;;
+
+inc_all [1; 2; 3] # returns [2; 3; 4]
+```
+
+Example:
+```ocaml
+let rec sum (l: int list) : int =
+  match l with
+  | [] -> 0
+  | h::t -> (sum t) + h # note: head is an element, t is the rest of the list
+;;
+```
+
+Example:
+```ocaml
+let rec is_sorted (l : int list) : bool =
+  match l with
+  | [] -> true
+  | [h1] -> true
+  | h1::h2::t -> (h1 <= h2) && is_sorted (h2::t)
+```
+
+Example:
+```ocaml
+let rec append (l1 : 'a list) (l2 : 'a list) : 'a list =
+  match l1 with
+  | [] -> l2
+  | h::t -> h::(append t l2) 
+```
+
+Example:
+```ocaml
+let rec rev (l: 'a list) : 'a list =
+  match l with
+  | [] -> []
+  | h::t append rev t [h] # can't use (rev t)::h because type error
+```

@@ -375,3 +375,114 @@ let rec rev (l: 'a list) : 'a list =
   | [] -> []
   | h::t append rev t [h] # can't use (rev t)::h because type error
 ```
+
+# Lecture 5 - 2/5/2026
+Note: Ask about how let and match are related
+
+# Functions
+- Functions are just values, everywhere you can use a value you can use a function too
+  - Like passing functions as arguments into functions
+ 
+```ocaml
+let apply_twice (f: 'a -> 'a) x =
+  f (f x)
+;;
+
+apply_twice (fun x -> x / 2) 40;;
+```
+
+```ocaml
+let compose (f: 'a -> 'b) (g: 'b -> 'c) x =
+  g (f x)
+;;
+
+let plus_one_then_double = compose ((+) 1) ( ( * ) 2);; (*Partial application*)
+```
+
+Example with list mapping recursion:
+```ocaml
+let rec inc_all l =
+  match l with
+  | [] -> []
+  | h::t -> (h + 1)::(inc_all t)
+
+let rec square_all l =
+  match l with
+  | [] -> []
+  | h::t -> (h * h)::(square_all t)
+
+(*These all follow the same pattern, let's write a function to do it*)
+
+let rec map (f: 'a -> 'b) (l: 'a list) : 'b list =
+  match l with
+  | [] -> []
+  | h::t -> (f h)::(map f t)
+;;
+(* Now we can pass in any function to map and it'll apply it to the entire list *)
+
+(* Rewrite functions using map function *)
+let inc_all = map ((+) 1)
+let length_all = map String.length
+let make_excited_all = map (fun s -> s ^ "!")
+
+(* This is already implemented in OCaml's standard library as List.map *)
+```
+
+Examples with other recursive list functions that return a single thing:
+```ocaml
+let rec sum l =
+  match l with
+  | [] -> 0
+  | h::t -> h + (sum t)
+;;
+
+let rec product l =
+  match l with
+  | [] -> 1
+  | h::t -> h * (product t)
+;;
+
+let rec concat (ll: 'a list list) : 'a list =
+  match ll with
+  | [] -> []
+  | h::t -> h @ (concat t)
+;;
+
+(* These functions all follow the same pattern, we can generalize this with a higher-order function (function that takes functions as arguments) *)
+let rec fold (f: 'a -> 'b -> 'b) (l: 'a list) (u : 'b) : 'b =
+  match l with
+  | [] -> u
+  | h::t -> f h (fold f t u)
+;;
+(* Fold function reduces a::b::c::...::z::[] to f(a, f(b, f(c, f(..., f(z, u))))) where u is the identity for the function *)
+
+(* Now, we can write *)
+let sum l = fold (+) l 0
+let product l = fold ( * ) l 1
+let concat l = fold (@) l []
+```
+
+Examples that modify lists
+```ocaml
+let rec only_even (l: int list) : int list =
+  match l with
+  | [] -> []
+  | h::t -> if h mod 2 = 0 then h::(only_even t) else only_even t
+;;
+
+let rec only_nonempty (l: 'a list list) : 'a list list =
+  match l with
+  | [] -> []
+  | h::t -> if h <> [] then h::(only_nonempty t) else only_nonempty t
+;;
+
+(* Filter higher-order function *)
+let rec filter (f: 'a -> bool) (l: 'a list) : 'a list
+  match l with
+  | [] -> []
+  | h::t -> if f h then h::(filter f t) else (filter f t)
+;;
+
+let only_even = filter (fun h -> h mod 2 = 0)
+let only_nonempty = filter (fun l -> match l with [] -> false | -> true)
+```

@@ -486,3 +486,56 @@ let rec filter (f: 'a -> bool) (l: 'a list) : 'a list
 let only_even = filter (fun h -> h mod 2 = 0)
 let only_nonempty = filter (fun l -> match l with [] -> false | -> true)
 ```
+
+# Lecture 6 - 2/12/2026
+# Options
+```ocaml
+type task = {
+  id : int;
+  title : string;
+}
+
+type assignment = {
+  task_info : task; (* assuming task is a type *)
+  owner : string option;
+}
+```
+
+- If a assignment does not yet have an owner, we want to support this behavior.
+- In other languages, we represent this with Null or None; in OCaml we use `options`
+
+Option Definition
+```ocaml type 'a option = None | Some of 'a```
+
+```ocaml
+let get_announcement (a : assignment) : string =
+  match a with
+  | None -> "No one is working on " ^ a.task_info.title
+  | Some name -> name ^ " is working on " ^ a.task_info.title
+;;
+
+let a1 = {task_info = {id = 1; title = "Demo"}; owner = None}
+```
+
+## Some Keyword
+let x = Some 1
+
+Put one into a box, turns x into option type
+x + 1 is not allowed, since + expects an int not int options
+
+```ocaml
+let safe_divide (x : int) (y : int) : int option =
+  if y = 0 then
+    None
+  else
+    Some (x / y) (* Some wraps it into option type *)
+;;
+```
+
+To unpack, match against it
+```ocaml
+let x = Some 1 (* int option *)
+let x_i = match x with None -> 0 | Some i -> i in x_i + 1;;
+```
+
+# Try-With (Try-Except)

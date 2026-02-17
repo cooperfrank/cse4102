@@ -539,3 +539,132 @@ let x_i = match x with None -> 0 | Some i -> i in x_i + 1;;
 ```
 
 # Try-With (Try-Except)
+
+
+# Lecture 7 - 2/17/2026
+
+# Higher-Order Functions on ADTs
+
+```ocaml
+type 'a tree =
+  | Leaf
+  | Node of 'a * 'a tree * 'a tree
+
+let rec map_tree (f : 'a -> 'b) (t : 'a tree) : 'b tree =
+  match t with
+  | Leaf -> Leaf
+  | Node (v, l, r) -> Node (f v, map_tree f l, map_tree f r)
+
+let t = Node (1, Node (2, Leaf, Leaf), Node (3, Leaf, Leaf))
+let t1 = map_tree ((+) 1) t (* Partial application of (+) *)
+
+(* Intuition: tell it what to do on each constructor (like for lists, on nil and cons) *)
+(* Similarly here for trees, fold needs to know what to do for leafs (u) and nodes (f) *)
+let rec fold_tree (f : 'a -> 'b -> 'b -> 'b) (u : 'b) (t : 'a tree) : 'b =
+  match t with
+  | Leaf -> u
+  | Node (v, l, r) -> f v (fold_tree f u l) (fold_tree f u r)
+;;
+
+let size = fold_tree (fun _ size_l size_r -> size_l + size_r + 1) 0 (* ada reduced *)
+let size_t = size t
+
+let preorder = fold_tree (fun v preorder_l preorder_r -> v :: (preorder_l @ preorder_r)) []
+
+let mirror = fold_tree (fun v mirror_l mirror_r -> Node (v, mirror_r, mirror_l)) Leaf
+(* Assume we've already mirrored the subchildren of v and they're given to us as mirror_l and mirror_r *)
+
+type 'a twothreetree =
+  | Leaf23
+  | Node2 of 'a * 'a twothreetree * 'a twothreetree
+  | Node3 of 'a * 'a twothreetree * 'a twothreetree 'a twothreetree
+
+let rec fold_23tree
+            (f : 'a -> 'b -> 'b -> 'b)
+            (g : 'a -> 'b -> 'b -> 'b -> 'b)
+            (u : 'b)
+            (t : 'a twothreetree) : 'b =
+  match t with
+  | Leaf -> u
+  | Node (v, l, r) -> f v (fold_23tree f g u l) (fold_23tree f g u r)
+  | Node (v, l, m, r) -> g v (fold_23tree f g u l) (fold_23tree f g u m) (fold_23tree f g u r)
+;;
+
+let size23 = fold_23tree
+  (fun _ size_l size_r -> size_l + size_r + 1)
+  (fun _ size_l size_m size_r -> size_l + size_r + size_m + 1)
+  0
+;;
+```
+
+# Higher-Order Functions on Lists (again)
+```ocaml
+let rec map f l =
+  match l with
+  | [] -> []
+  | x::t -> (f x)::(map f t)
+;;
+
+let l = map (fun x -> x * 2) [1; 2; 3; 4; 5]
+(* Key question: is this function scalable? Can it handle large inputs? *)
+let l = map (fun x -> x * 2) (List.init 100_000_000 (fun i -> i)) (* List.init creates list of 100,000,000 integers *)
+(* This line above causes a stack overflow because the stack is too large, don't want the stack to overwrite key data *)
+```
+
+When functions get called, they have their own stack frame. This means that recursive functions keep adding more and more stack frames onto the old ones without collapsing old ones
+
+```ocaml
+let rec rev l =
+  match l with
+  | [] -> []
+  | x::t -> (rev t) @ [x] (* Note, this is quadratic time complexity because append is O(n) *)
+
+(* We are going to make a linear time reverse that uses O(1) space *)
+
+let rev l =
+  let rec rev_inner a l = (* two piles of paper: l (to be reversed) and a (reversed stack being built) *)
+    match l with
+    | [] -> a
+    | x::t -> rev_inner (x::a) t
+  in (* let expressions vs definitions (let definitions have to be at top level, or else syntax error *)
+  rev_inner [] l
+```
+
+In the second example, there's nothing to do after the rev_inner call, so there's no need to go back to this stack frame. This is tail-recursion
+
+```ocaml
+let map_tr f l =
+  let rec map_inner a l =
+    match l with
+    | [] -> rev a
+    | x::t -> map_inner ((f x)::a) t
+  in
+  map_inner [] l
+```
+
+- In functional programming, every function can technically be tail recursive but may not all be constant space
+
+```ocaml
+let sum_tr (l: int list) : int =
+  let rec sum_inner a l =
+    match l with
+    | [] -> a
+    | x::t -> sum_inner (x + a) t
+  in
+  sum_inner 0 l
+;;
+
+let fold_tr (f: 'b -> 'a -> 'b) (u: 'b) (l: 'a list) =
+  let rec fold_inner f a l =
+    match l with
+    | [] -> a
+    | x::r -> fold_inner f (f a x) r
+  in
+  fold_inner f u l
+;;
+
+let sum = fold_tr (+) 0
+let mystery = List.fold_left (fun mystery_rest x -> x::mystery_rest) [] (* reversed list *)
+```
+
+This looks almost like fold, but behaves a little different. This applies f on the left-most element first, then on the next elements (List.fold_left)

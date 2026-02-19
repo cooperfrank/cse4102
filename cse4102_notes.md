@@ -668,3 +668,128 @@ let mystery = List.fold_left (fun mystery_rest x -> x::mystery_rest) [] (* rever
 ```
 
 This looks almost like fold, but behaves a little different. This applies f on the left-most element first, then on the next elements (List.fold_left)
+
+# Lecture X - 2/19/2026
+# Functional
+- Functional programs have a lack of side effects
+- Mutation/destructive updates to data structures (changing values in memory)
+  - ex. a functiont hat reverses a list in-place
+- I/O
+- Exceptions
+- Anything a program does other than return a value
+- OCaml is not purely functional
+
+## Benefits of functional programming
+- Sharing
+```ocaml
+let l = [1; 2; 3; 4; 5]
+let l' = 0::l
+(* Nodes are shared between l and l' because OCaml knows that they'll never be changed *)
+```
+  - Sharing is really good for implementing search problems
+- Referential transparency (ex. replace fib 5 with 8 everywhere)
+  - Because fib 5 has no side effects and only returns 8, therefore fib 5 is completely equal to 8 (can be optimized at compile time)
+- Don't need to worry about evaluation order, race conditions, etc. (evaluation order is right-to-left which is weird but it doesn't matter)
+  - Because everything is immutable, race conditions for updates of values don't exist (can't update the value)
+- You can apply the functional programming ideas into other non-functional languages
+
+## Higher-Order Programming
+- OCaml is higher-order
+- Functions are just like any other value
+- Functions can take and return functions (higher-order functions)
+- Anonymous functions
+- Allows code reuse, simplicity of language (ex. currying instead of multi-argument functions)
+
+# OCaml's Type System
+- ADTs allow expressing fairly detailed properties
+- Polymorphism
+  - Code reuse
+
+
+Mutation in OCaml
+- Keyword `ref` builds a mutable reference to a value
+- A reference is like a box in memory, where the box holds a value
+- The box itself is immutable, but the thing in the box is mutable
+- := operator is mutation assignment
+  - Returns unit
+- !r gets the value in the box
+- refs can only hold one type in the box
+
+```ocaml
+let r = ref 42;;
+let _ = r := 43;;
+let _ = r := (!r) + 1;;
+```
+
+- Referential transparency is gone with mutation
+- Evaluation order now matters (remember, it's right to left in OCaml)
+
+```ocaml
+let x =
+  let my_ref = ref 0 in
+  (!my_ref) + (my_ref := 1; 0)
+;;
+(* x = 1 *)
+```
+
+```ocaml
+let r = ref 0 in
+  let a =
+    let r = ref 0 in
+    let _ = r := 1 in
+    !r
+  in
+    let b = !r in
+    a + b
+(* Evaluates to 1, a = 1 and b = 0. Remember the let expression evaluation, where there are two r's for each scope *)
+(* everytime you call ref it makes a new box *)
+;;
+```
+
+```ocaml
+let a = ref 0 in
+let b = a in
+a := 1;
+!b
+(* a and b are pointing at the same box, this is now aliasing *)
+```
+
+Destructive data structures
+```ocaml
+(* Doubly linked lists *)
+type 'a dll_node = {
+  value: 'a;
+  mutable next: 'a dll;
+  mutable prev: 'a dll
+}
+and 'a dll =
+  | Empty
+  | Head of 'a dll_node
+
+let empty_dll = Empty
+
+let cons_dll (x: 'a) (l: 'a dll) : 'a dll =
+  match l with
+  | Empty -> Head { value = x; next = Empty; prev = Empty}
+  | Head node ->
+    let new_node = {
+      value = x;
+      next = l;
+      prev = Empty;  
+    }
+    in
+    node.prev <- Head new_node;
+    Head new_node
+;;
+
+(* let rec print_dll *)
+
+let evil =
+  let l = {value = 1; next = Empty; prev = Empty} in
+  l.next <- Head l;
+  Head l;
+
+let _ = print_dll evil;;
+(* Cycles are not possible without mutation  *)
+```
+

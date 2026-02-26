@@ -793,3 +793,65 @@ let _ = print_dll evil;;
 (* Cycles are not possible without mutation  *)
 ```
 
+
+
+
+# Inference Rules
+
+if everything above this line is true (premise)
+-----
+then we can conclude everything below the line (conclusion)
+
+Axiom: A conclusion without a premise
+
+We derive new facts by putting together rules from the system
+
+ex.
+
+-----
+0 is a natural number
+
+
+n is a a natural number
+-----
+n + 1 is a natural number
+
+
+==
+
+----
+0 is a natural number
+----
+1 is a natural number
+----
+2 is a natural number
+----
+3 is a natural number
+
+"derivation"
+
+When proving a conclusion, there always must be at least one axiom (everything should have a horizontal line over it)
+
+
+
+
+# Lambda Calculus (untyped) Syntax
+- We use Backus-Naur Form (BNF)
+
+A ::= B | C | A A
+
+A is a construct ("nonterminal")
+::= is "is defined to be"
+| is "one of these things" (which can be "terminals" (actual syntactic things) or other nonterminal)
+
+When talking about an arbitrary term (metavariable), we use M
+x is a metavariable that stands in for an actual variable
+```
+Terms M ::= x | lambda x. M | M M
+```
+x is a stand-in for a variable
+lambda x. M is a one-argument anonymous function (think like fun x -> M)
+M M is an application
+
+
+|

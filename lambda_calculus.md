@@ -1,28 +1,59 @@
-# 3/10/2026
+# Lambda Calculus: Values and Evaluation Axioms
 
-Let's define a meta variable M of type val
-A val is an expression that is finished calculating (a variable or lambda function, NOT application!)
+## 1. Definitions
 
-ex. 5
-ex. fun x -> fun y -> x + y
+### Meta-Variable $M$
 
-We have some axioms for the val
+We define $M$ as a general expression within our language.
 
-(V-Lambda axiom) states that 
-$$\frac{val}{λx.M val}$$
+### The `val` Type
 
-ex. `(λy.λx.(λz.x)y) val` is true because it follows λx.M format (it has λy.M)
+A **val** (value) represents an expression that has finished calculating. It is "fully reduced."
 
-S-App Axiom:
+* **Includes:** Variables, constants (like `5` or `"hello"`), and **lambda functions** (abstractions).
+* **Excludes:** Applications (e.g., `f x` is not a value because it can still "do" something).
 
-$$\frac{N val}{(λx.M) N ↦ [N/x] M}$$
+> **Examples of values:**
+> * `5`
+> * `fun x -> fun y -> x + y`
+> * `(λy. λx. (λz. x) y)`
+> 
+> 
 
-ex. step through example (ocaml syntax)
-Given:
-Step 0: `((fun x -> fun y -> x y) string_of_int) 5`
-Step 1 |-> `((fun y -> string_of_int y)) 5` (replace all instances of x with `string_of_int`
-Step 2 |-> `string_of_int 5`
-Step 3 |-> `"5"`
+---
 
-The S-App Axiom is basically saying in any place we see x in the body of the function, replace it with the thing we are passing for x, which is N
+## 2. Formal Axioms
 
+### V-Lambda Axiom (Values)
+
+This axiom states that any lambda abstraction is, by definition, a value. Even if the *body* of the function could be simplified later, the function itself is finished as a piece of data.
+
+$$\frac{}{\lambda x. M \text{ is a val}}$$
+
+* **Example:** `(λy. λx. (λz. x) y)` is a value because it starts with a `λ`.
+
+### S-App Axiom (Small-step Application)
+
+Also known as **$\beta$-reduction**, this rule defines how a function actually executes. In a "Call-by-Value" system, we only trigger this when the argument $N$ is already a value.
+
+$$\frac{N \text{ is a val}}{(\lambda x. M) N \mapsto [N/x] M}$$
+
+**Translation:** If you apply a function $(\lambda x. M)$ to a value $N$, you result in the body $M$, where every instance of the bound variable $x$ is replaced by $N$.
+
+---
+
+## 3. Evaluation Trace
+
+Below is a step-by-step reduction of an OCaml expression using these axioms.
+
+**Initial Expression:**
+`((fun x -> fun y -> x y) string_of_int) 5`
+
+| Step | Expression | Action |
+| --- | --- | --- |
+| **0** | `((fun x -> fun y -> x y) string_of_int) 5` | Identify the innermost application. |
+| **1** | `(fun y -> string_of_int y) 5` | **S-App:** Replace `x` with `string_of_int`. |
+| **2** | `string_of_int 5` | **S-App:** Replace `y` with `5`. |
+| **3** | `"5"` | **Final Value:** Calculation complete. |
+
+--

@@ -13,11 +13,8 @@ A **val** (value) represents an expression that has finished calculating. It is 
 * **Includes:** Variables, constants (like `5`), and **lambda functions** (abstractions).
 * **Excludes:** Applications (e.g., `f x`).
 
-> **V-Lambda Axiom:** Any lambda abstraction is a value.
-> 
-> $$\frac{}{\lambda x. M \text{ is a val}}$$
-> 
-> 
+**V-Lambda Axiom:** Any lambda abstraction is a value.
+$$\frac{}{\lambda x. M \text{ is a val}}$$
 
 ---
 

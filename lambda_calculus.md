@@ -8,14 +8,14 @@ ex. fun x -> fun y -> x + y
 
 We have some axioms for the val
 
-(V-Lambda axiom) states that `λx.M is a val`
+(V-Lambda axiom) states that 
+$$\frac{val}{λx.M val}$$
 
 ex. `(λy.λx.(λz.x)y) val` is true because it follows λx.M format (it has λy.M)
 
 S-App Axiom:
 
-N val /over/ (λx.M) N |-> [N/x] M
-$$\frac{N val}{(λx.M) N |-> [N/x] M}$$
+$$\frac{N val}{(λx.M) N ↦ [N/x] M}$$
 
 ex. step through example (ocaml syntax)
 Given:

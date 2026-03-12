@@ -135,54 +135,73 @@ In practice, languages like **Haskell** use a refined version of CBN called **Ca
 
 # Church Numerals
 
-In lambda calculus, **Church numerals** are a way to represent non-negative integers using only functions. Since lambda calculus doesn't have "built-in" numbers, we define them based on how many times a function is applied to an argument.
-
-## The Core Concept
-
-A Church numeral $n$ is a higher-order function that takes two arguments: a function $f$ and a starting value $x$. The number $n$ represents the **$n$-th iteration** of $f$ applied to $x$.
-
-The general form is:
-
-
-$$\lambda f. \lambda x. f^n(x)$$
-
-## The Encodings
-
-Here is how the first few natural numbers are defined:
-
-| Number | Lambda Expression | Intuition |
-| --- | --- | --- |
-| **0** | $\lambda f. \lambda x. x$ | Apply $f$ zero times (just return $x$). |
-| **1** | $\lambda f. \lambda x. f x$ | Apply $f$ exactly once to $x$. |
-| **2** | $\lambda f. \lambda x. f (f x)$ | Apply $f$ twice (compose $f$ with itself). |
-| **3** | $\lambda f. \lambda x. f (f (f x))$ | Apply $f$ three times. |
-
-> **Note:** Church zero ($\lambda f. \lambda x. x$) is identical to the Church encoding for **False**.
+In lambda calculus, **Church numerals** are a way to represent non-negative integers using only functions. Since the system has no "built-in" numbers, we define them by how many times a function is applied to an argument.
 
 ---
 
+## The Encodings ($s, z$ notation)
+
+The standard way to write these is using $s$ (for **Successor**) and $z$ (for **Zero**). The number $n$ is defined as the $n$-fold composition of the function $s$ applied to the term $z$.
+
+| Number | Lambda Expression | Intuition |
+| --- | --- | --- |
+| **0** | $\lambda s. \lambda z. z$ | Return the "zero" value as-is. |
+| **1** | $\lambda s. \lambda z. s z$ | Apply the successor function once. |
+| **2** | $\lambda s. \lambda z. s (s z)$ | Apply the successor function twice. |
+| **3** | $\lambda s. \lambda z. s (s (s z))$ | Apply the successor function three times. |
+| **$n$** | $\lambda s. \lambda z. s^n z$ | Apply the successor function $n$ times. |
+
+---
+
+## What do $s$ and $z$ mean?
+
+These variable names are mnemonics for the **Peano axioms**, which define natural numbers starting from zero and moving forward one "step" at a time.
+
+* **$s$ (Successor):** Represents the "increment" operation. It is a function that takes one argument and returns "one more" of whatever that argument was.
+* **$z$ (Zero):** Represents the "base case" or the starting point. It is the value you have before any operations are applied.
+
+### The "Loop" Intuition
+
+You can think of a Church numeral as a **higher-order loop**. If you were to translate this to a standard programming language (like Python or JS), the numeral **3** would essentially mean: *"Take a function and a starting value, then run that function three times on that value."*
+
+> **Quick Tip:** Because $\lambda s. \lambda z. z$ ignores $s$ and just returns $z$, it is functionally identical to the Church encoding for **False**.
+
+---
+
+### The Successor Function ($SUCC$)
+
+The expression $S = \lambda n. \lambda s. \lambda z. s (n s z)$ is the formal definition of the **Successor** function. Its job is to take a Church numeral $n$ and return $n + 1$.
+
+#### How it Works (Step-by-Step)
+
+1.  **Input ($n$):** It accepts an existing Church numeral (e.g., **2**).
+    
+2.  **The "Unwrapping" ($n s z$):** The part inside the parentheses, $(n s z)$, tells the numeral $n$ to apply the function $s$ to the base value $z$ exactly $n$ times.
+    
+3.  **The "Extra Step" ($s (...)$):** The $s$ outside the parentheses applies the successor function **one more time** to the result of the previous step.
+    
+4.  **The Result:** You now have $n + 1$ applications of $s$.
+
+OCaml Analogy:
+```ocaml
+let rec apply_n_times n s z =
+  if n = 0 then z
+  else s (apply n times (n - 1) s z)
+```
+
 ### Basic Arithmetic Operations
 
-To make these numerals useful, we define functions that manipulate them:
+* **Successor ($SUCC$):** Takes a numeral $n$ and wraps it in one more $s$.
 
-* **Successor ($SUCC$):** To get $n+1$, we take a numeral $n$ and apply $f$ one more time.
-
-$$SUCC \equiv \lambda n. \lambda f. \lambda x. f (n f x)$$
+$$SUCC \equiv \lambda n. \lambda s. \lambda z. s (n s z)$$
 
 
-* **Addition ($PLUS$):** To add $m$ and $n$, we apply $f$ $m$ times to the result of applying $f$ $n$ times.
+* **Addition ($PLUS$):** To add $m$ and $n$, you use $m$ to apply $s$ "m-times" to the result of $n$.
 
-$$PLUS \equiv \lambda m. \lambda n. \lambda f. \lambda x. m f (n f x)$$
-
-
-* **Multiplication ($MULT$):** To multiply $m$ and $n$, we compose the functions (apply the "apply $f$ $n$ times" function $m$ times).
-
-$$MULT \equiv \lambda m. \lambda n. \lambda f. m (n f)$$
+$$PLUS \equiv \lambda m. \lambda n. \lambda s. \lambda z. m s (n s z)$$
 
 
+* **Multiplication ($MULT$):** To multiply, you apply the "n-times" function "m-times."
 
-### Why does this work?
+$$MULT \equiv \lambda m. \lambda n. \lambda s. m (n s)$$
 
-In a pure functional system, we don't care what the "value" of a number is; we only care about its **behavior**. Church numerals define numbers by their ability to act as loops or repeated transformations.
-
-Would you like me to show you how to derive the **Predecessor** function, or perhaps see these encodings implemented in a programming language like Python or JavaScript?

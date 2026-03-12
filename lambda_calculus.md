@@ -130,3 +130,59 @@ The choice of evaluation strategy significantly impacts performance and terminat
 ### The "Call-by-Need" Hybrid
 
 In practice, languages like **Haskell** use a refined version of CBN called **Call-by-Need** (Lazy Evaluation). It gets the best of both worlds: it doesn't evaluate the argument unless it's used (like CBN), but it "memoizes" the result the first time it's calculated so it doesn't have to do it again (like CBV).
+
+---
+
+# Church Numerals
+
+In lambda calculus, **Church numerals** are a way to represent non-negative integers using only functions. Since lambda calculus doesn't have "built-in" numbers, we define them based on how many times a function is applied to an argument.
+
+## The Core Concept
+
+A Church numeral $n$ is a higher-order function that takes two arguments: a function $f$ and a starting value $x$. The number $n$ represents the **$n$-th iteration** of $f$ applied to $x$.
+
+The general form is:
+
+
+$$\lambda f. \lambda x. f^n(x)$$
+
+## The Encodings
+
+Here is how the first few natural numbers are defined:
+
+| Number | Lambda Expression | Intuition |
+| --- | --- | --- |
+| **0** | $\lambda f. \lambda x. x$ | Apply $f$ zero times (just return $x$). |
+| **1** | $\lambda f. \lambda x. f x$ | Apply $f$ exactly once to $x$. |
+| **2** | $\lambda f. \lambda x. f (f x)$ | Apply $f$ twice (compose $f$ with itself). |
+| **3** | $\lambda f. \lambda x. f (f (f x))$ | Apply $f$ three times. |
+
+> **Note:** Church zero ($\lambda f. \lambda x. x$) is identical to the Church encoding for **False**.
+
+---
+
+### Basic Arithmetic Operations
+
+To make these numerals useful, we define functions that manipulate them:
+
+* **Successor ($SUCC$):** To get $n+1$, we take a numeral $n$ and apply $f$ one more time.
+
+$$SUCC \equiv \lambda n. \lambda f. \lambda x. f (n f x)$$
+
+
+* **Addition ($PLUS$):** To add $m$ and $n$, we apply $f$ $m$ times to the result of applying $f$ $n$ times.
+
+$$PLUS \equiv \lambda m. \lambda n. \lambda f. \lambda x. m f (n f x)$$
+
+
+* **Multiplication ($MULT$):** To multiply $m$ and $n$, we compose the functions (apply the "apply $f$ $n$ times" function $m$ times).
+
+$$MULT \equiv \lambda m. \lambda n. \lambda f. m (n f)$$
+
+
+
+### Why does this work?
+
+In a pure functional system, we don't care what the "value" of a number is; we only care about its **behavior**. Church numerals define numbers by their ability to act as loops or repeated transformations.
+
+Would you like me to show you how to derive the **Predecessor** function, or perhaps see these encodings implemented in a programming language like Python or JavaScript?

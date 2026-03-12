@@ -188,20 +188,66 @@ let rec apply_n_times n s z =
   if n = 0 then z
   else s (apply n times (n - 1) s z)
 ```
+Here is a refined, professional version of your notes. I have improved the formatting for readability, corrected the lambda calculus syntax (specifically for Multiplication), and ensured the OCaml analogies remain clear.
 
-### Basic Arithmetic Operations
+## Arithmetic in Church Encoding
 
-* **Successor ($SUCC$):** Takes a numeral $n$ and wraps it in one more $s$.
+In Church Calculus, arithmetic is performed by treating numbers as **higher-order functions**. Since a numeral $n$ represents "apply a function $n$ times," we can define operations by controlling what function is being applied and what the starting value is.
 
-$$SUCC \equiv \lambda n. \lambda s. \lambda z. s (n s z)$$
+### 1. Addition ($PLUS$)
 
+**Intuition:** To compute $x + y$, we start with the value $y$ and apply the **Successor function** ($S$) to it $x$ times.
 
-* **Addition ($PLUS$):** To add $m$ and $n$, you use $m$ to apply $s$ "m-times" to the result of $n$.
+#### OCaml Analogy
 
-$$PLUS \equiv \lambda m. \lambda n. \lambda s. \lambda z. m s (n s z)$$
+```ocaml
+(* start with y, then apply the successor function x times *)
+let plus x y = apply_n_times x succ y
 
+```
 
-* **Multiplication ($MULT$):** To multiply, you apply the "n-times" function "m-times."
+#### Lambda Calculus Definition
 
-$$MULT \equiv \lambda m. \lambda n. \lambda s. m (n s)$$
+$$\text{PLUS} \equiv \lambda x. \lambda y. x \, S \, y$$
 
+* **$x$**: The first numeral (acting as a loop).
+* **$S$**: The Successor function ($\lambda n. \lambda s. \lambda z. s (n s z)$) passed as the function to be repeated.
+* **$y$**: The second numeral, passed as the starting "base" value.
+
+---
+
+### 2. Multiplication ($MULT$)
+
+**Intuition:** Multiplication is repeated addition. To compute $x \times y$, we start with **Zero** and apply the "Add $y$" function $x$ times.
+
+> $x \times y = \underbrace{y + y + \dots + y}_{x \text{ times}} + 0$
+
+#### OCaml Analogy
+
+```ocaml
+(* start with zero, then apply the (plus y) function x times *)
+let mult x y = apply_n_times x (plus y) zero
+
+```
+
+#### Lambda Calculus Definition
+
+$$\text{MULT} \equiv \lambda x. \lambda y. x (\text{PLUS} \, y) 0$$
+
+* **$(\text{PLUS} \, y)$**: This is **partial application**. It creates a function that "adds $y$" to whatever it receives.
+* **$x$**: Applies that "add $y$" function $x$ times.
+* **$0$**: The starting point for the repeated addition.
+
+---
+
+#### Summary Table of Operations
+
+| Operation | Logic | Lambda Expression |
+| --- | --- | --- |
+| **Successor** | Add 1 to $n$ | $\lambda n. \lambda s. \lambda z. s (n s z)$ |
+| **Addition** | Apply $S$ to $y$, $x$ times | $\lambda x. \lambda y. x S y$ |
+| **Multiplication** | Apply $(+y)$ to $0$, $x$ times | $\lambda x. \lambda y. x (\text{PLUS } y) 0$ |
+
+---
+
+**Would you like to see how we define Exponentiation?** It follows the same pattern: $x^y$ is just applying the "Multiply by $x$" function $y$ times to the number **1**.

@@ -250,4 +250,43 @@ $$\text{MULT} \equiv \lambda x. \lambda y. x (\text{PLUS} \, y) 0$$
 
 ---
 
-**Would you like to see how we define Exponentiation?** It follows the same pattern: $x^y$ is just applying the "Multiply by $x$" function $y$ times to the number **1**.
+## Church Booleans
+We need to encode three things for booleans (remember, we only have functions and applications):
+1. if
+2. true
+3. false
+
+### Defining These
+if statements follow form `if e1 then e2 else e3`
+
+In church encoding, we define an if statement as 
+`if e1 then e2 else e3` \triangleq e1 e2 e3
+true \triangleq  \lambda t . \lambda f . t (returns true, the first argument)
+false \triangleq \lambda t . \lambda f . f (returns false, the second argument)
+
+true M2 M3 |->* M2 
+false M2 M3 |->* M3
+
+iszero M1 
+iszero \triangleeq \lambda n . n (\lambda z . false) true
+>(where n is a church numberal)
+
+### Stepping Through
+(\lambda z . false ) true |-> false
+(\lambda z . false) ((\lambda z . false) trye) |-> (\lambda z . false) false) |-> false
+So, for any n > 0, this returns false
+
+For iszero 0, we have
+iszero 0 (\lambda n . n (\lambda z.false) true) (\lambda s . \lambdaz . z)
+|-> ((\lambda s . \lambda z . z) (\lambda z . false)) true
+|-> (\lambda z . z) true
+|-> true
+
+For iszero 1, we have 
+*STEP THROUGH THIS LIEK FOR 0*
+So, we can see that iszero is working as expected
+
+ifzero M1 M2 M3 \triangleeq \lambda n . \lambda t . \lambda f . if (iszero n) t f
+
+s 0 \triangleeq [\lambda n . \lambda s . \lambda z . s (n s z)] (\lambda s . \lambda z . z)
+|-> \lambda s . \lambda z . s ((\la,bda s . \lambda z . z) s z === \lambda s . \lambda z . s z (our original definition of 1)

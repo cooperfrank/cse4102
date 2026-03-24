@@ -341,3 +341,63 @@ $$(\lambda b . M_1) \ M_2$$
 **5. Finish the evaluation (Substitute $b$):**
 We pass $M_2$ in as the argument $b$. Since $b$ is not used in the body of the function, $M_2$ is discarded.
 $$M_1$$
+
+
+You got it. If that is how your course or original notes are structuring it, it's best to keep those variables exactly as you have them! 
+
+Here is the revised version with `s` and `z` placed right back into the `predpair` definition, keeping the rest of the flow and formatting identical.
+
+***
+
+# The Predecessor Function in Lambda Calculus
+
+The goal of the predecessor function (`pred`) is to return the number strictly before $n$:
+$$\text{pred} \ n \rightarrow n - 1$$
+
+## 1. The Challenge with Church Numerals
+Recall how we represent numbers using Church numerals—they are functions that apply a "step" ($s$) to a "base" ($z$) $n$ times:
+* **0** $\triangleq \lambda s . \lambda z . z$
+* **1** $\triangleq \lambda s . \lambda z . s \ z$
+
+Because Church numerals are built entirely by moving *forward* (repeatedly applying functions), moving *backward* (un-applying a function to get $n-1$) is not naturally supported. We cannot simply "undo" an application.
+
+## 2. The Solution: `predpair`
+Instead of trying to move backward, we can solve this by building forward! We define a helper function called `predpair`. 
+
+The goal of `predpair` is to take a number $n$ and return a pair containing both $n$ and $n-1$:
+$$\text{predpair} \ n = (n, n-1)$$
+
+At first glance, this seems to suffer from the same problem: we still need a way to compute $n-1$. However, we can generate this pair dynamically from the ground up using a "sliding window" approach.
+
+### The Sliding Window Progression
+We start at zero and repeatedly step forward. At each step, the *new* first element becomes the old first element plus one, and the *new* second element is just a copy of the old first element.
+* $\text{predpair} \ 0 = (0, 0)$  *(Base case: no negative numbers in standard Church numerals)*
+* $\text{predpair} \ 1 = (1, 0)$
+* $\text{predpair} \ 2 = (2, 1)$
+* $\text{predpair} \ 3 = (3, 2)$
+
+Notice how the second element of the pair gracefully trails exactly one step behind, giving us $n-1$!
+
+## 3. Formal Definitions
+
+To formalize this, we pass a step function into our Church numeral $n$. This step function takes the previous pair $p$, increments the first element using `succ`, and shifts the old first element into the second slot. 
+
+**The `predpair` Function:**
+$$\text{predpair} \triangleq \lambda n . \lambda s . \lambda z . n \ (\lambda p . (\text{succ} \ (\text{fst} \ p), \text{fst} \ p)) \ (0, 0)$$
+
+**The `pred` Function:**
+Now that `predpair` does all the heavy lifting of carrying $n-1$ alongside $n$, finding the predecessor is trivially easy. We just apply `predpair` to $n$ and extract the second element using `snd`!
+
+$$\text{pred} \triangleq \lambda n . \text{snd} \ (\text{predpair} \ n)$$
+
+
+# Minus
+Now that we've defined predecessor, we can define minus
+Minus \triangleq λa.λb. b pred a 
+
+(applies predecessor b times to a, because b is a church numeral encoding)
+
+# Comparisons
+We can also define less or equal from this
+Once we define less or equal and predecessor, we can define pretty much any comparison operation
+Now we have everything we need for logic with natural numbers

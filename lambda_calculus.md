@@ -401,3 +401,100 @@ Minus \triangleq λa.λb. b pred a
 We can also define less or equal from this
 Once we define less or equal and predecessor, we can define pretty much any comparison operation
 Now we have everything we need for logic with natural numbers
+Here is a polished version of your notes. I kept the exact logical progression you laid out—moving from OCaml to the naive lambda definition, explaining the self-reference problem, and finally introducing the "magic" `fix` function to solve it. 
+
+# The Factorial Function and Recursion
+
+## 1. Recursion in OCaml
+In a language like OCaml, defining the factorial function is straightforward because the language explicitly supports self-reference using `let rec`:
+
+```ocaml
+let rec fact n =
+    if n = 0 then 1
+    else n * (fact (n - 1))
+;;
+```
+
+## 2. The Naive Lambda Calculus Translation
+If we try to translate this directly into lambda calculus, it might look like this:
+
+$$\text{fact} \triangleq \lambda n . \text{ifzero} \ n \ 1 \ (\text{times} \ n \ (\text{fact} \ (\text{pred} \ n)))$$
+
+**The Problem:** This looks logically correct, but pure lambda calculus does not have a built-in way to define terms in terms of themselves (like `let rec`). We cannot reference `fact` inside the definition of `fact` before it actually exists!
+
+* NOTE: THIS DEFINITION IS COMPLETELY INCORRECT, DO NOT USE ANYWHERE
+
+## 3. Abstracting the Recursive Call
+To get around the self-reference issue, we can rewrite the function so that it takes `fact` as an input parameter, rather than trying to call it globally. Let's call this new function $\text{fact}'$:
+
+$$\text{fact}' \triangleq \lambda \text{fact} . \lambda n . \text{ifzero} \ n \ 1 \ (\text{times} \ n \ (\text{fact} \ (\text{pred} \ n)))$$
+
+Here, we are passing the function in as a parameter instead of defining it recursively. Now, let's try to define our actual `fact` function by wrapping $\text{fact}'$ and passing `fact` into it:
+
+$$\text{fact} \triangleq \text{fact}' \ \text{fact}$$
+
+**The Problem Returns:** We run into the exact same issue! We still can't pass `fact` into the definition because `fact` hasn't been fully defined yet.
+
+## 4. The Magic `fix` Function
+For now, let's assume we have access to a "magic" function called `fix` that possesses the following property:
+
+$$\text{fix} \ f = f \ (\text{fix} \ f)$$
+
+* NOTE: fix is short for fixed-point combinator
+
+If we had this magic `fix` function, it would solve our self-reference problem entirely. We could define `fact` by applying `fix` to our $\text{fact}'$ function:
+
+1. **Apply `fix`:**
+   $$\text{fact} \triangleq \text{fix} \ \text{fact}'$$
+
+2. **Expand based on the magic property:**
+   $$\text{fact} \triangleq \text{fact}' \ (\text{fix} \ \text{fact}')$$
+
+3. **Substitute `fact` back in:**
+   $$\text{fact} \triangleq \text{fact}' \ \text{fact}$$
+
+By using `fix`, we trick the lambda calculus into feeding the function back into itself endlessly, successfully simulating recursion without ever needing a `let rec`!
+
+# The Y-Combinator: Defining `fix`
+
+In our previous notes, we assumed the existence of a "magic" `fix` function that allows for recursion by satisfying the property: $\text{fix} \ f = f \ (\text{fix} \ f)$. 
+
+In pure lambda calculus, we can actually build this function! The most famous fixed-point combinator used to achieve this is the **Y-Combinator**, discovered by Haskell Curry.
+
+## 1. The Definition
+The Y-Combinator is defined as a function that takes another function $f$ and applies a self-replicating structure to it:
+
+$$Y \triangleq \lambda f . (\lambda x . f \ (x \ x)) \ (\lambda x . f \ (x \ x))$$
+
+## 2. Evaluation Proof (Beta Reduction)
+Let's step through the evaluation of $Y \ f$ to prove that it successfully replicates the magic `fix` property of returning $f \ (Y \ f)$.
+
+**1. Start with the expression $Y \ f$ and expand $Y$:**
+$$( \lambda f . (\lambda x . f \ (x \ x)) \ (\lambda x . f \ (x \ x)) ) \ f$$
+
+**2. Substitute the argument $f$ into the body (Beta Reduction on $\lambda f$):**
+We pass $f$ in, replacing the bound variable $f$.
+$$(\lambda x . f \ (x \ x)) \ (\lambda x . f \ (x \ x))$$
+
+**3. Apply the left function to the right function (Beta Reduction on $\lambda x$):**
+We take the entire right-hand term $(\lambda x . f \ (x \ x))$ and pass it into the left-hand function as the argument $x$. 
+$$f \ ( (\lambda x . f \ (x \ x)) \ (\lambda x . f \ (x \ x)) )$$
+
+**4. Recognize the recursive pattern:**
+Look closely at the inner portion of the expression we just generated: 
+$$(\lambda x . f \ (x \ x)) \ (\lambda x . f \ (x \ x))$$
+This is the *exact same expression* we had in Step 2! And since we know from Step 2 that this expression is the evaluated form of $Y \ f$, we can substitute $Y \ f$ right back into our formula.
+
+$$f \ (Y \ f)$$
+
+---
+
+## 3. Conclusion
+Through basic beta reduction, we have proven that:
+$$Y \ f \rightarrow f \ (Y \ f)$$
+
+This means the Y-Combinator **is** our magic `fix` function. By defining $\text{fact} \triangleq Y \ \text{fact}'$, the Y-Combinator will continuously feed the factorial function back into itself, allowing for infinite recursion in a system that doesn't natively support it!
+
+NOTE: The Y-Combinator ONLY works for call-by-name, not call-by-value
+
+For call-by-value, there is the Z-Combinator

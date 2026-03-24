@@ -290,3 +290,54 @@ ifzero M1 M2 M3 \triangleeq \lambda n . \lambda t . \lambda f . if (iszero n) t 
 
 s 0 \triangleeq [\lambda n . \lambda s . \lambda z . s (n s z)] (\lambda s . \lambda z . z)
 |-> \lambda s . \lambda z . s ((\la,bda s . \lambda z . z) s z === \lambda s . \lambda z . s z (our original definition of 1)
+
+# Pairs
+
+We know pairs are defined as $(a, b)$ and support `fst` and `snd` to extract the values. We can also nest pairs to build more complex structures, like $(a, (b, c))$.
+
+## Formal Definitions
+
+### The Pair Constructor
+To create a pair containing elements $M_1$ and $M_2$, we construct a function that takes a selector function $s$ and applies it to our two values:
+
+$$(M_1, M_2) \triangleq \lambda s . s \ M_1 \ M_2$$
+
+### The Selectors (`fst` and `snd`)
+To extract values, we define `fst` and `snd` to pass a specific selector function into the pair $p$.
+
+**First Element (`fst`):**
+$$\text{fst} \triangleq \lambda p . p (\lambda a . \lambda b . a)$$
+
+**Second Element (`snd`):**
+$$\text{snd} \triangleq \lambda p . p (\lambda a . \lambda b . b)$$
+
+
+## A Note on Church Booleans
+Notice the inner functions used to select the elements: $\lambda a . \lambda b . a$ and $\lambda a . \lambda b . b$. 
+
+These happen to be the exact definitions for Church booleans. Because of this, they can be directly replaced with **TRUE** and **FALSE**:
+* `TRUE` $\triangleq \lambda a . \lambda b . a$ (chooses the first argument)
+* `FALSE` $\triangleq \lambda a . \lambda b . b$ (chooses the second argument)
+
+
+## Fully Expanded Beta Reduction
+
+**1. The Fully Expanded Starting Expression:**
+We substitute the definitions for both `fst` and the pair immediately:
+$$(\lambda p . p (\lambda a . \lambda b . a)) (\lambda s . s \ M_1 \ M_2)$$
+
+**2. Apply the left function to the right function (Substitute $p$):**
+The entire right-hand term $(\lambda s . s \ M_1 \ M_2)$ is passed in as the argument for $p$. We replace the $p$ in the body of the first function with our pair definition.
+$$(\lambda s . s \ M_1 \ M_2) (\lambda a . \lambda b . a)$$
+
+**3. Apply the pair function to the selector (Substitute $s$):**
+Now, the selector function $(\lambda a . \lambda b . a)$ is passed in as the argument for $s$.
+$$(\lambda a . \lambda b . a) \ M_1 \ M_2$$
+
+**4. Evaluate the selector (Substitute $a$):**
+We pass $M_1$ into the selector as the argument $a$. The selector now holds onto $M_1$ and ignores whatever comes next.
+$$(\lambda b . M_1) \ M_2$$
+
+**5. Finish the evaluation (Substitute $b$):**
+We pass $M_2$ in as the argument $b$. Since $b$ is not used in the body of the function, $M_2$ is discarded.
+$$M_1$$

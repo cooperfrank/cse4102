@@ -125,3 +125,16 @@ This rule formalizes how we give a type to a variable $x$. It states that if loo
 
 $$\frac{\Gamma(x) = T}{\Gamma \vdash x : T} \text{ (T-Var)}$$
 
+### The Lambda Rule (Functions)
+This rule defines how we determine the type of a function (also called an abstraction). To find the type of $\lambda x : \tau.\ e$, we temporarily add the parameter $x$ and its declared type $\tau$ to our context (written as $\Gamma, x : \tau$). If, under this new extended context, the body of the function ($e$) evaluates to a type $\tau'$, then the entire function evaluates to the type $\tau \to \tau'$.
+
+$$\frac{\Gamma, x : \tau \vdash e : \tau'}{\Gamma \vdash \lambda x : \tau.\ e : \tau \to \tau'} \text{ (T-Lambda)}$$
+
+### The Application Rule (Function Calls)
+This rule defines how we type-check function calls to ensure we aren't passing the wrong data type into a function. It requires two conditions (premises) to be met:
+1.  The left expression ($e_1$) must evaluate to a function type: $\tau \to \tau'$.
+2.  The right expression, or argument ($e_2$), must evaluate to a type that exactly matches the function's expected input: $\tau$.
+
+If both of these conditions are true, then the entire application ($e_1\ e_2$) evaluates to the function's return type: $\tau'$.
+
+$$\frac{\Gamma \vdash e_1 : \tau \to \tau' \quad \Gamma \vdash e_2 : \tau}{\Gamma \vdash e_1\ e_2 : \tau'} \text{ (T-App)}$$

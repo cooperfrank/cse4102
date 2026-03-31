@@ -260,3 +260,57 @@ To extract an element from a pair, the underlying expression must first be typed
 $$\frac{\Gamma \vdash e : \tau_1 \times \tau_2}{\Gamma \vdash \text{fst } e : \tau_1} \text{ (T-Fst)}$$
 
 $$\frac{\Gamma \vdash e : \tau_1 \times \tau_2}{\Gamma \vdash \text{snd } e : \tau_2} \text{ (T-Snd)}$$
+
+
+### New Notes
+V-Pair:
+v_1 val v_2 val
+--- (V-Pair)
+(v_1, v_2) val
+
+S-PairLeft:
+e_1 |-> e_1'
+--- S-PairLeft
+(e1, e2) |-> (e1', e2)
+
+S-PairRight
+v1 val    e2 |-> e2'
+--- (S-PairRight)
+(v1, e2) |-> (v1, e2')
+
+Note that this means we step the left until its a value first, then steo the right
+
+e |-> e'
+--- (S-SearchFst)
+fst e |-> fst e'
+
+v1 val v2 val
+--- (S-Fst)
+fst (v1, v2) |-> v1
+
+e |-> e'
+--- (S-SearchSnd)
+snd e |-> snd e'
+
+v1 val v2 val
+--- (S-Fst)
+snd (v1, v2) |-> v2
+
+*AI explain the significance of each*
+
+### Example
+fst [(λx:bool.(if x then false else true, x)) true]
+|-> fst (if true then false else true, true) # now we will apply S-PairLeft
+|-> fst (false, true) 
+|-> false
+
+
+
+## Type Safety
+Progress: If \bullet \vdash e : \tau then e val or there exists e' such that e |-> e'
+
+Preservation: If \bullet \vdash e : \tau and e |-> e' then \bullet \vdash e' : \tau
+
+Theorem: If \bullet \vdash e : \tau then e |->* v where v val (stops infinite loops)
+
+

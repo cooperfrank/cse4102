@@ -73,7 +73,6 @@ However, notice that **the dynamic semantics (stepping rules) ignore the types e
 
 Therefore, just because a program is *ill-typed* doesn't necessarily mean it will hang or throw a runtime error. In Example 2, the dynamic evaluation still executes perfectly, substituting the function in for $x$. The type system's job is to catch these logical mismatches *before* this runtime execution ever happens.
 
-
 # Static Semantics
 
 Static semantics define how we assign types to expressions. If an expression successfully evaluates to a valid type under these rules, we say the program is "well-typed." We write $e : T$ to state that an expression $e$ has type $T$ (tau).
@@ -138,3 +137,65 @@ This rule defines how we type-check function calls to ensure we aren't passing t
 If both of these conditions are true, then the entire application ($e_1\ e_2$) evaluates to the function's return type: $\tau'$.
 
 $$\frac{\Gamma \vdash e_1 : \tau \to \tau' \quad \Gamma \vdash e_2 : \tau}{\Gamma \vdash e_1\ e_2 : \tau'} \text{ (T-App)}$$
+
+---
+---
+
+# Extension: Booleans and Conditionals
+
+To add boolean logic and conditional branching to our Simply Typed Lambda Calculus, we must expand our syntax and introduce new typing rules.
+
+## 1. Extended Syntax
+
+We extend both our type syntax ($T$) and our expression syntax ($e$) to account for boolean values (`true`, `false`) and the `if-then-else` construct.
+
+### Extended Type Syntax
+$$T \Coloneqq \text{unit} \mid \text{bool} \mid T \to T$$
+
+### Extended Expression Syntax
+$$e \Coloneqq x \mid \lambda x:T.\ e \mid e\ e \mid () \mid \text{true} \mid \text{false} \mid \text{if } e \text{ then } e \text{ else } e$$
+
+---
+
+## 2. New Typing Rules (Static Semantics)
+
+We need axioms to define the types of our new constant values, and a rule to handle the conditional logic.
+
+### Boolean Axioms
+Like `()`, boolean values are constants. They don't require context lookups, so their premises are empty.
+
+$$\frac{}{\Gamma \vdash \text{true} : \text{bool}} \text{ (T-True)}$$
+
+$$\frac{}{\Gamma \vdash \text{false} : \text{bool}} \text{ (T-False)}$$
+
+### The Conditional Rule (T-If)
+To properly type an `if-then-else` expression, three premises must be satisfied:
+1. The condition ($e_1$) must evaluate to a `bool`.
+2. The "then" branch ($e_2$) must evaluate to some type $T$.
+3. The "else" branch ($e_3$) must evaluate to the **exact same** type $T$.
+
+If all three conditions are met, the entire expression evaluates to type $T$.
+
+$$\frac{\Gamma \vdash e_1 : \text{bool} \quad \Gamma \vdash e_2 : T \quad \Gamma \vdash e_3 : T}{\Gamma \vdash \text{if } e_1 \text{ then } e_2 \text{ else } e_3 : T} \text{ (T-If)}$$
+
+---
+
+## 3. Example: Proving a Conditional Expression
+
+Let's use our typing rules to construct a formal proof tree showing that the following expression is well-typed and evaluates to `unit` under an empty context ($\Gamma$):
+
+$$\text{if } (\lambda x:\text{bool}.\ x)\ \text{true} \text{ then } () \text{ else } ()$$
+
+To keep the derivation readable, we will split it into two parts. First, we'll derive the type of the condition (the application). Then, we'll plug that derivation into the final `T-If` rule.
+
+### Part 1: Deriving the Condition (Let's call this sub-tree $D_1$)
+We must prove that applying `true` to the identity function `(\x:bool. x)` results in a `bool`. We use `T-App`, combining `T-Lambda` (which internally uses `T-Var`) and `T-True`.
+
+$$D_1 = \frac{\displaystyle \frac{\Gamma, x:\text{bool} \vdash x : \text{bool} \text{ (T-Var)}}{\Gamma \vdash \lambda x:\text{bool}.\ x : \text{bool} \to \text{bool}} \text{ (T-Lambda)} \quad \frac{}{\Gamma \vdash \text{true} : \text{bool}} \text{ (T-True)}}{\Gamma \vdash (\lambda x:\text{bool}.\ x)\ \text{true} : \text{bool}} \text{ (T-App)}$$
+
+### Part 2: The Final Derivation
+Now, we use $D_1$ as the first premise for our `T-If` rule. The second and third premises simply use `T-Unit`.
+
+$$\frac{D_1 \quad \frac{}{\Gamma \vdash () : \text{unit}} \text{ (T-Unit)} \quad \frac{}{\Gamma \vdash () : \text{unit}} \text{ (T-Unit)}}{\Gamma \vdash \text{if } (\lambda x:\text{bool}.\ x)\ \text{true} \text{ then } () \text{ else } () : \text{unit}} \text{ (T-If)}$$
+
+Because we successfully built this tree using only our established rules, we have formally proven that the expression is well-typed and has the type `unit`.

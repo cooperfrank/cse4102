@@ -199,3 +199,64 @@ Now, we use $D_1$ as the first premise for our `T-If` rule. The second and third
 $$\frac{D_1 \quad \frac{}{\Gamma \vdash () : \text{unit}} \text{ (T-Unit)} \quad \frac{}{\Gamma \vdash () : \text{unit}} \text{ (T-Unit)}}{\Gamma \vdash \text{if } (\lambda x:\text{bool}.\ x)\ \text{true} \text{ then } () \text{ else } () : \text{unit}} \text{ (T-If)}$$
 
 Because we successfully built this tree using only our established rules, we have formally proven that the expression is well-typed and has the type `unit`.
+
+## Extending Dynamic Semantics with Booleans
+
+Previously, we established the basic judgments for evaluation: $e \text{ val}$ (is a value) and $e \mapsto e'$ (takes a step). 
+
+To support booleans, we first formally recognize `true` and `false` as fully evaluated values:
+* **V-True:** `true val`
+* **V-False:** `false val`
+
+**These are axioms**
+
+Next, we define the stepping rules for `if-then-else` expressions:
+
+### The Search Rule
+If the condition ($e_1$) is not yet a value, we must step the condition first.
+$$\frac{e_1 \mapsto e_1'}{\text{if } e_1 \text{ then } e_2 \text{ else } e_3 \mapsto \text{if } e_1' \text{ then } e_2 \text{ else } e_3} \text{ (S-SearchIf)}$$
+
+### The Computation Axioms
+Once the condition evaluates to a boolean value, we step directly into the appropriate branch.
+$$\frac{}{\text{if true then } e_2 \text{ else } e_3 \mapsto e_2} \text{ (S-IfTrue)}$$
+
+$$\frac{}{\text{if false then } e_2 \text{ else } e_3 \mapsto e_3} \text{ (S-IfFalse)}$$
+
+### Analysis of Conditional Judgments
+These three rules formally define standard "call-by-value" execution for conditionals. `S-SearchIf` acts as a congruence rule, forcing the program to evaluate the condition ($e_1$) down to a value *before* looking at the branches. Once $e_1$ becomes a boolean (`true` or `false`), the computation steps directly to the corresponding branch using the computation axioms (`S-IfTrue` or `S-IfFalse`). Because the unselected branch is discarded immediately without being evaluated, these rules successfully model the "short-circuiting" behavior expected of `if` statements.
+
+### Example
+Here is an example of an `if` expression stepping down to a `unit` value.
+
+$$\text{if } (\lambda x:\text{bool}.\ x)\ \text{true} \text{ then } (\lambda x:\text{unit}.\ x)\ () \text{ else } ()$$
+$$\mapsto \text{if true then } (\lambda x:\text{unit}.\ x)\ () \text{ else } () \quad \text{(S-SearchIf)}$$
+$$\mapsto (\lambda x:\text{unit}.\ x)\ () \quad \text{(S-IfTrue)}$$
+$$\mapsto () \quad \text{(S-App)}$$
+
+---
+
+## Extending the Language Again with Tuples (Pairs)
+
+We can further extend our language to support 2-tuples (pairs) by adding them to our syntax and defining their static semantics.
+
+### Extended Syntax
+We add the pair type $\tau_1 \times \tau_2$ to our types. For expressions, we add pair creation $(e_1, e_2)$ along with projections to access the elements (`fst` for the first element, `snd` for the second).
+
+**Types:**
+$$T \Coloneqq \text{unit} \mid T \to T \mid \text{bool} \mid T \times T$$
+
+**Expressions:**
+$$e \Coloneqq x \mid () \mid \lambda x:T.\ e \mid e\ e \mid \text{true} \mid \text{false} \mid \text{if } e \text{ then } e \text{ else } e \mid (e, e) \mid \text{fst } e \mid \text{snd } e$$
+
+### Static Semantics (Typing Rules)
+
+**The Pair Rule:**
+To type a pair, both elements must be individually well-typed. The resulting type is the cross product of the two individual types.
+$$\frac{\Gamma \vdash e_1 : \tau_1 \quad \Gamma \vdash e_2 : \tau_2}{\Gamma \vdash (e_1, e_2) : \tau_1 \times \tau_2} \text{ (T-Pair)}$$
+
+**The Projection Rules:**
+To extract an element from a pair, the underlying expression must first be typed as a pair ($\tau_1 \times \tau_2$). `fst` extracts the first type ($\tau_1$), and `snd` extracts the second type ($\tau_2$).
+
+$$\frac{\Gamma \vdash e : \tau_1 \times \tau_2}{\Gamma \vdash \text{fst } e : \tau_1} \text{ (T-Fst)}$$
+
+$$\frac{\Gamma \vdash e : \tau_1 \times \tau_2}{\Gamma \vdash \text{snd } e : \tau_2} \text{ (T-Snd)}$$

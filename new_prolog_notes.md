@@ -1,3 +1,25 @@
+# Random Notes
+## ;
+- Semicolon is disjunction, running multiple queries
+- Think like "or"
+- Not good practice to use, never actually have to. Can just define multiple versions of the rule
+
+## ,
+- Comma is conjunction, think like "and"
+- For the inference rule with P1, P2, P3 on top and C as conclusion, you can write it as `C :- P1, P2, P3`
+
+## Left Recursion:
+- Recusrive step is on the left side, which means that we might encounter infinite loops
+
+## Unification
+
+
+## is
+- Used like `X is 5 + 2`
+- Arithmetic expression has to be on the right
+- Cannot do `7 is X + 3` because X is uninstantiated
+- Can do like `member(X, [1, 2, 3, 4]), 7 is X + 3` will work though because X gets instantiated for each branch from the member before evaluating the arithmetic
+
 **Word Puzzle**
 
 ```prolog

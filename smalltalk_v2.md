@@ -96,3 +96,51 @@ inject, which is basically fold
 (1 to: 10) inject: '' into: [:acc :i | acc, i printString, ' '].
 ```
 
+Inject in a more object oriented way, the above was sort of functionally
+
+Ths is like a for loop
+```smalltalk
+sum := 0.
+(1 to: 100) do: [:i | sum := sum + i].
+```
+
+here, we'll use 'do it' on the loop rather than print it because we arent interested in what it prints, but the effect it has on sum
+
+We can make this look more like a while loop:
+```smalltalk
+sum := 0.
+i := 1.
+[i <= 100] whileTrue: [sum := sum + i. i := i + 1]
+sum
+i
+```
+
+We can use the these operations with any collection
+```smalltalk
+#(1 25 825 324) inject: 0 into: [:s :i | s + 1]
+
+sum := 0.
+#(1 25 825 324) do: [:i | sum := sum + i].
+
+"indexing over the collection"
+sum := 0.
+arr := #(1 25 825 324)
+i := 0.
+[i < (arr size)] whileTrue: [sum := sum + (arr atWrap: i). i := i + 1]
+sum
+i
+
+"note: atWrap gets the element at the index passed, if the index is out of range then it wraps around"
+```
+
+Practice Problem
+```smalltalk
+zeros := 0.
+nzprod := 1.
+#(1 6 0 32 3 0 1 0) do: [:i | (i = 0) ifTrue: [zeros := zeros + 1] ifFalse: [nzprod := nzprod * i]].
+
+"its very important that the ifTrue and ifFalse blocks are in square brackets, or else they will run no matter what"
+"also, the do should be a block because its actually a lambda function, it needs to be"
+```
+
+The object is the only one that can change its instance varaibles, so we need to define messages that let us change/set instance variables of an object

@@ -144,3 +144,14 @@ nzprod := 1.
 ```
 
 The object is the only one that can change its instance varaibles, so we need to define messages that let us change/set instance variables of an object
+
+Higher order functions
+```smalltalk
+"Higher order functions"
+epsilon := 0.000001.
+derive := [:f | [: x | (f value: x + epsilon) - (f value: x) / epsilon]].
+
+f := [:x | x * x].
+fprime := derive value:f.
+fprime value: 2.5. 5.00000100078779
+```

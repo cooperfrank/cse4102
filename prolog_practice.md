@@ -42,3 +42,21 @@ prefix(Ps, Ls) :-
     PH = LH,
     prefix(PT, LT).
 ```
+
+Sieve
+```prolog
+sieve([], []).
+sieve([H | T], Rs) :-
+    filter_multiples(H, T, Fs),
+    sieve(Fs, Rs).
+
+% filter_multiples(X, Ls, Rs)
+filter_multiples(_, [], []).
+filter_multiples(X, [H | T], RT) :-
+    0 is (H mod X), % H is divisible by X, do not want in list
+    % H \= RH,
+    filter_multiples(X, T, RT).
+filter_multiples(X, [H | T], [H | RT]) :-
+    0 =\= (H mod X), % H is not divisible by X, DO want in list
+    filter_multiples(X, T, RT).
+```
